@@ -1,0 +1,216 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Free File Converter for Students</title>
+<meta name="description" content="Free online tools for students: convert images (JPG, PNG, WebP), compress photos, turn images into PDF, and merge PDFs. Files never leave your device.">
+<style>
+  :root{--bg:#f6f7fb;--card:#fff;--text:#1d2433;--muted:#5d6678;--accent:#2f6df6;--accent-d:#1f55cc;--line:#e1e5ee;}
+  @media (prefers-color-scheme:dark){:root{--bg:#12151c;--card:#1b2029;--text:#e8ecf4;--muted:#9aa4b8;--accent:#5b8cff;--accent-d:#7aa0ff;--line:#2b3240;}}
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--text);font:16px/1.5 system-ui,-apple-system,Segoe UI,Roboto,sans-serif}
+  header,main,footer{max-width:760px;margin:0 auto;padding:0 16px}
+  header{padding-top:28px;padding-bottom:8px}
+  h1{margin:0 0 4px;font-size:1.6rem}
+  .sub{color:var(--muted);margin:0}
+  .tabs{display:flex;gap:8px;flex-wrap:wrap;margin:20px 0 12px}
+  .tab{border:1px solid var(--line);background:var(--card);color:var(--text);padding:10px 14px;border-radius:10px;font:inherit;cursor:pointer}
+  .tab[aria-selected="true"]{background:var(--accent);border-color:var(--accent);color:#fff}
+  .card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:18px;margin-bottom:16px}
+  .card h2{margin:0 0 4px;font-size:1.15rem}
+  label{display:block;margin:14px 0 6px;font-weight:600;font-size:.95rem}
+  input[type=file],select,input[type=range]{width:100%}
+  select,input[type=file]{padding:10px;border:1px solid var(--line);border-radius:8px;background:var(--bg);color:var(--text);font:inherit}
+  button.go{margin-top:16px;background:var(--accent);color:#fff;border:0;padding:12px 18px;border-radius:10px;font:inherit;font-weight:600;cursor:pointer;width:100%}
+  button.go:hover{background:var(--accent-d)}
+  button.go:disabled{opacity:.6;cursor:wait}
+  .out{margin-top:14px;display:grid;gap:8px}
+  .out a{display:block;padding:10px 12px;border:1px solid var(--line);border-radius:8px;color:var(--accent);text-decoration:none;word-break:break-all}
+  .msg{margin-top:10px;color:var(--muted);font-size:.92rem}
+  .err{color:#d33}
+  .ad{margin:16px 0;min-height:90px;border:1px dashed var(--line);border-radius:10px;display:flex;align-items:center;justify-content:center;color:var(--muted);font-size:.85rem}
+  footer{padding-top:8px;padding-bottom:32px;color:var(--muted);font-size:.88rem}
+  [hidden]{display:none!important}
+</style>
+</head>
+<body>
+<header>
+  <h1>Free File Converter for Students</h1>
+  <p class="sub">Convert images, make PDFs and merge PDFs. Everything runs on your device — your files are never uploaded.</p>
+</header>
+
+<main>
+  <div class="tabs" role="tablist">
+    <button class="tab" role="tab" aria-selected="true" data-tab="img">Image Converter</button>
+    <button class="tab" role="tab" aria-selected="false" data-tab="pdf">Images to PDF</button>
+    <button class="tab" role="tab" aria-selected="false" data-tab="merge">Merge PDFs</button>
+  </div>
+
+  <!-- AD SLOT 1: paste your ad code here after your ad account is approved -->
+  <div class="ad" id="ad-top">Ad space</div>
+
+  <section class="card" id="tab-img">
+    <h2>Image Converter &amp; Compressor</h2>
+    <p class="sub">Change JPG / PNG / WebP and make photos smaller.</p>
+    <label for="img-files">Choose images</label>
+    <input id="img-files" type="file" accept="image/*" multiple>
+    <label for="img-format">Convert to</label>
+    <select id="img-format">
+      <option value="image/jpeg">JPG</option>
+      <option value="image/png">PNG</option>
+      <option value="image/webp">WebP</option>
+    </select>
+    <label for="img-quality">Quality: <span id="img-q-val">80</span>% (JPG/WebP only; lower = smaller file)</label>
+    <input id="img-quality" type="range" min="10" max="100" value="80">
+    <button class="go" id="img-go">Convert</button>
+    <div class="msg" id="img-msg"></div>
+    <div class="out" id="img-out"></div>
+  </section>
+
+  <section class="card" id="tab-pdf" hidden>
+    <h2>Images to PDF</h2>
+    <p class="sub">Combine photos or scans into one PDF (one image per page, A4).</p>
+    <label for="pdf-files">Choose images (in the order you want)</label>
+    <input id="pdf-files" type="file" accept="image/jpeg,image/png,image/webp" multiple>
+    <button class="go" id="pdf-go">Make PDF</button>
+    <div class="msg" id="pdf-msg"></div>
+    <div class="out" id="pdf-out"></div>
+  </section>
+
+  <section class="card" id="tab-merge" hidden>
+    <h2>Merge PDFs</h2>
+    <p class="sub">Join several PDF files into one.</p>
+    <label for="merge-files">Choose PDFs (in the order you want)</label>
+    <input id="merge-files" type="file" accept="application/pdf" multiple>
+    <button class="go" id="merge-go">Merge</button>
+    <div class="msg" id="merge-msg"></div>
+    <div class="out" id="merge-out"></div>
+  </section>
+
+  <!-- AD SLOT 2 -->
+  <div class="ad" id="ad-bottom">Ad space</div>
+</main>
+
+<footer>
+  <p>Privacy: all conversion happens in your browser. No files are sent to any server.</p>
+</footer>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf-lib/1.17.1/pdf-lib.min.js"></script>
+<script>
+(function(){
+  // ---------- tabs ----------
+  var tabs=document.querySelectorAll('.tab');
+  tabs.forEach(function(t){
+    t.addEventListener('click',function(){
+      tabs.forEach(function(x){x.setAttribute('aria-selected',x===t?'true':'false');});
+      ['img','pdf','merge'].forEach(function(n){
+        document.getElementById('tab-'+n).hidden=(n!==t.dataset.tab);
+      });
+    });
+  });
+
+  var $=function(id){return document.getElementById(id);};
+  function setMsg(id,text,isErr){var e=$(id);e.textContent=text;e.className='msg'+(isErr?' err':'');}
+  function addLink(outId,blob,name,label){
+    var a=document.createElement('a');
+    a.href=URL.createObjectURL(blob);a.download=name;
+    a.textContent='Download '+name+' ('+label+')';
+    $(outId).appendChild(a);
+  }
+  function kb(n){return n>1048576?(n/1048576).toFixed(2)+' MB':Math.round(n/1024)+' KB';}
+  function loadImage(file){
+    return new Promise(function(res,rej){
+      var url=URL.createObjectURL(file),img=new Image();
+      img.onload=function(){URL.revokeObjectURL(url);res(img);};
+      img.onerror=function(){URL.revokeObjectURL(url);rej(new Error('Cannot read '+file.name));};
+      img.src=url;
+    });
+  }
+  function toBlob(canvas,type,q){
+    return new Promise(function(res){canvas.toBlob(res,type,q);});
+  }
+  function baseName(n){return n.replace(/\.[^.]+$/,'');}
+  var extMap={'image/jpeg':'jpg','image/png':'png','image/webp':'webp'};
+
+  // ---------- image converter ----------
+  $('img-quality').addEventListener('input',function(){$('img-q-val').textContent=this.value;});
+  $('img-go').addEventListener('click',async function(){
+    var files=$('img-files').files,btn=this;
+    $('img-out').innerHTML='';
+    if(!files.length){setMsg('img-msg','Please choose at least one image.',true);return;}
+    btn.disabled=true;setMsg('img-msg','Working...');
+    var type=$('img-format').value,q=$('img-quality').value/100,done=0;
+    for(var i=0;i<files.length;i++){
+      try{
+        var img=await loadImage(files[i]);
+        var c=document.createElement('canvas');
+        c.width=img.naturalWidth;c.height=img.naturalHeight;
+        var ctx=c.getContext('2d');
+        if(type==='image/jpeg'){ctx.fillStyle='#fff';ctx.fillRect(0,0,c.width,c.height);}
+        ctx.drawImage(img,0,0);
+        var blob=await toBlob(c,type,q);
+        if(!blob)throw new Error('Format not supported by this browser');
+        addLink('img-out',blob,baseName(files[i].name)+'.'+extMap[type],kb(files[i].size)+' → '+kb(blob.size));
+        done++;
+      }catch(e){setMsg('img-msg',e.message,true);}
+    }
+    btn.disabled=false;
+    if(done)setMsg('img-msg','Done: '+done+' file(s) converted.');
+  });
+
+  // ---------- images to PDF ----------
+  $('pdf-go').addEventListener('click',async function(){
+    var files=$('pdf-files').files,btn=this;
+    $('pdf-out').innerHTML='';
+    if(!files.length){setMsg('pdf-msg','Please choose at least one image.',true);return;}
+    btn.disabled=true;setMsg('pdf-msg','Working...');
+    try{
+      var jsPDF=window.jspdf.jsPDF;
+      var doc=new jsPDF({unit:'mm',format:'a4'});
+      var PW=210,PH=297,M=10;
+      for(var i=0;i<files.length;i++){
+        var img=await loadImage(files[i]);
+        // re-draw to JPEG so every format works
+        var c=document.createElement('canvas');
+        c.width=img.naturalWidth;c.height=img.naturalHeight;
+        var ctx=c.getContext('2d');ctx.fillStyle='#fff';ctx.fillRect(0,0,c.width,c.height);ctx.drawImage(img,0,0);
+        var data=c.toDataURL('image/jpeg',0.92);
+        var r=Math.min((PW-2*M)/c.width,(PH-2*M)/c.height);
+        var w=c.width*r,h=c.height*r;
+        if(i>0)doc.addPage();
+        doc.addImage(data,'JPEG',(PW-w)/2,(PH-h)/2,w,h);
+      }
+      var blob=doc.output('blob');
+      addLink('pdf-out',blob,'images.pdf',kb(blob.size));
+      setMsg('pdf-msg','Done: '+files.length+' page(s).');
+    }catch(e){setMsg('pdf-msg',e.message,true);}
+    btn.disabled=false;
+  });
+
+  // ---------- merge PDFs ----------
+  $('merge-go').addEventListener('click',async function(){
+    var files=$('merge-files').files,btn=this;
+    $('merge-out').innerHTML='';
+    if(files.length<2){setMsg('merge-msg','Please choose at least two PDFs.',true);return;}
+    btn.disabled=true;setMsg('merge-msg','Working...');
+    try{
+      var out=await PDFLib.PDFDocument.create();
+      for(var i=0;i<files.length;i++){
+        var bytes=await files[i].arrayBuffer();
+        var src=await PDFLib.PDFDocument.load(bytes);
+        var pages=await out.copyPages(src,src.getPageIndices());
+        pages.forEach(function(p){out.addPage(p);});
+      }
+      var merged=await out.save();
+      var blob=new Blob([merged],{type:'application/pdf'});
+      addLink('merge-out',blob,'merged.pdf',kb(blob.size));
+      setMsg('merge-msg','Done: '+files.length+' PDFs merged.');
+    }catch(e){setMsg('merge-msg','Could not merge (a PDF may be locked or damaged): '+e.message,true);}
+    btn.disabled=false;
+  });
+})();
+</script>
+</body>
+</html>
