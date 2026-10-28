@@ -31,13 +31,16 @@
   .err{color:#d33}
   .ad{margin:16px 0;min-height:90px;border:1px dashed var(--line);border-radius:10px;display:flex;align-items:center;justify-content:center;color:var(--muted);font-size:.85rem}
   footer{padding-top:8px;padding-bottom:32px;color:var(--muted);font-size:.88rem}
+  .row{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+  .row input{padding:10px;border:1px solid var(--line);border-radius:8px;background:var(--bg);color:var(--text);font:inherit;width:100%}
+  #a-req{padding:10px;border:1px solid var(--line);border-radius:8px;background:var(--bg);color:var(--text);font:inherit;width:100%}
   [hidden]{display:none!important}
 </style>
 </head>
 <body>
 <header>
   <h1>Free File Converter for Students</h1>
-  <p class="sub">Convert images, make PDFs and merge PDFs. Everything runs on your device — your files are never uploaded.</p>
+  <p class="sub">Convert images, make and merge PDFs, and use study calculators and a timer. Everything runs on your device — your files are never uploaded.</p>
 </header>
 
 <main>
@@ -45,6 +48,8 @@
     <button class="tab" role="tab" aria-selected="true" data-tab="img">Image Converter</button>
     <button class="tab" role="tab" aria-selected="false" data-tab="pdf">Images to PDF</button>
     <button class="tab" role="tab" aria-selected="false" data-tab="merge">Merge PDFs</button>
+    <button class="tab" role="tab" aria-selected="false" data-tab="calc">Calculators</button>
+    <button class="tab" role="tab" aria-selected="false" data-tab="timer">Study Timer</button>
   </div>
 
   <!-- AD SLOT 1: paste your ad code here after your ad account is approved -->
@@ -88,11 +93,46 @@
     <div class="out" id="merge-out"></div>
   </section>
 
+  <section class="card" id="tab-calc" hidden>
+    <h2>Student Calculators</h2>
+    <p class="sub">Quick marks, CGPA and attendance maths.</p>
+
+    <label>Percentage: marks obtained / total marks</label>
+    <div class="row"><input id="p-got" type="number" min="0" placeholder="Obtained"><input id="p-tot" type="number" min="1" placeholder="Total"></div>
+    <div class="msg" id="p-res"></div>
+
+    <label>CGPA to percentage (multiplier, default 9.5)</label>
+    <div class="row"><input id="c-cgpa" type="number" min="0" step="0.01" placeholder="CGPA"><input id="c-mul" type="number" step="0.01" value="9.5" placeholder="Multiplier"></div>
+    <div class="msg" id="c-res">Your university may use a different formula — check your rules.</div>
+
+    <label>Attendance: classes attended / total held</label>
+    <div class="row"><input id="a-att" type="number" min="0" placeholder="Attended"><input id="a-tot" type="number" min="1" placeholder="Total held"></div>
+    <label for="a-req">Required attendance %</label>
+    <input id="a-req" type="number" min="1" max="100" value="75">
+    <div class="msg" id="a-res"></div>
+  </section>
+
+  <section class="card" id="tab-timer" hidden>
+    <h2>Study Timer (Pomodoro)</h2>
+    <p class="sub">Study 25 minutes, rest 5 minutes. Repeat.</p>
+    <div id="t-disp" style="font-size:3rem;font-weight:700;text-align:center;margin:12px 0">25:00</div>
+    <div class="msg" id="t-mode" style="text-align:center">Focus</div>
+    <div class="row">
+      <button class="go" id="t-start">Start</button>
+      <button class="go" id="t-reset">Reset</button>
+    </div>
+  </section>
+
   <!-- AD SLOT 2 -->
   <div class="ad" id="ad-bottom">Ad space</div>
 </main>
 
 <footer>
+  <p><strong>Share this site:</strong>
+    <a id="sh-wa" href="#" target="_blank" rel="noopener">WhatsApp</a> ·
+    <a id="sh-tg" href="#" target="_blank" rel="noopener">Telegram</a> ·
+    <a href="#" id="sh-copy">Copy link</a>
+  </p>
   <p>Privacy: all conversion happens in your browser. No files are sent to any server.</p>
 </footer>
 
@@ -105,12 +145,21 @@
   tabs.forEach(function(t){
     t.addEventListener('click',function(){
       tabs.forEach(function(x){x.setAttribute('aria-selected',x===t?'true':'false');});
-      ['img','pdf','merge'].forEach(function(n){
+      ['img','pdf','merge','calc','timer'].forEach(function(n){
         document.getElementById('tab-'+n).hidden=(n!==t.dataset.tab);
       });
     });
   });
 
+  var shareUrl=location.href.split('#')[0],shareTxt='Free file converter, PDF tools and study calculators for students: ';
+  document.getElementById('sh-wa').href='https://wa.me/?text='+encodeURIComponent(shareTxt+shareUrl);
+  document.getElementById('sh-tg').href='https://t.me/share/url?url='+encodeURIComponent(shareUrl)+'&text='+encodeURIComponent(shareTxt);
+  document.getElementById('sh-copy').addEventListener('click',function(e){
+    e.preventDefault();var l=this;
+    function ok(){l.textContent='Link copied!';}
+    if(navigator.clipboard&&navigator.clipboard.writeText){navigator.clipboard.writeText(shareUrl).then(ok,function(){prompt('Copy this link:',shareUrl);});}
+    else{prompt('Copy this link:',shareUrl);}
+  });
   var $=function(id){return document.getElementById(id);};
   function setMsg(id,text,isErr){var e=$(id);e.textContent=text;e.className='msg'+(isErr?' err':'');}
   function addLink(outId,blob,name,label){
@@ -209,6 +258,57 @@
       setMsg('merge-msg','Done: '+files.length+' PDFs merged.');
     }catch(e){setMsg('merge-msg','Could not merge (a PDF may be locked or damaged): '+e.message,true);}
     btn.disabled=false;
+  });
+  // ---------- calculators ----------
+  function num(id){return parseFloat($(id).value);}
+  function pct(){
+    var g=num('p-got'),t=num('p-tot');
+    $('p-res').textContent=(isNaN(g)||isNaN(t)||t<=0)?'':'Percentage: '+(g/t*100).toFixed(2)+'%';
+  }
+  function cg(){
+    var c=num('c-cgpa'),m=num('c-mul');
+    $('c-res').textContent=(isNaN(c)||isNaN(m))?'Your university may use a different formula — check your rules.':'Percentage: '+(c*m).toFixed(2)+'%';
+  }
+  function att(){
+    var a=num('a-att'),t=num('a-tot'),r=num('a-req');
+    var e=$('a-res');
+    if(isNaN(a)||isNaN(t)||isNaN(r)||t<=0||r<=0||r>=100&&false){e.textContent='';return;}
+    var cur=a/t*100,txt='Current attendance: '+cur.toFixed(2)+'%. ';
+    if(cur>=r){
+      var skip=r>=100?0:Math.floor(a*100/r-t);
+      txt+='You can miss about '+Math.max(0,skip)+' more class(es) and stay at '+r+'%.';
+    }else{
+      var need=r>=100?null:Math.ceil((r*t-100*a)/(100-r));
+      txt+=need===null?'Need every class from now on.':'Attend the next '+need+' class(es) in a row to reach '+r+'%.';
+    }
+    e.textContent=txt;
+  }
+  ['p-got','p-tot'].forEach(function(i){$(i).addEventListener('input',pct);});
+  ['c-cgpa','c-mul'].forEach(function(i){$(i).addEventListener('input',cg);});
+  ['a-att','a-tot','a-req'].forEach(function(i){$(i).addEventListener('input',att);});
+
+  // ---------- study timer ----------
+  var tLeft=1500,tFocus=true,tId=null;
+  function tShow(){
+    var m=Math.floor(tLeft/60),s=tLeft%60;
+    $('t-disp').textContent=(m<10?'0':'')+m+':'+(s<10?'0':'')+s;
+    $('t-mode').textContent=tFocus?'Focus':'Break';
+  }
+  function tTick(){
+    tLeft--;
+    if(tLeft<=0){
+      tFocus=!tFocus;tLeft=tFocus?1500:300;
+      try{if(navigator.vibrate)navigator.vibrate(300);}catch(e){}
+    }
+    tShow();
+  }
+  $('t-start').addEventListener('click',function(){
+    if(tId){clearInterval(tId);tId=null;this.textContent='Start';}
+    else{tId=setInterval(tTick,1000);this.textContent='Pause';}
+  });
+  $('t-reset').addEventListener('click',function(){
+    clearInterval(tId);tId=null;tFocus=true;tLeft=1500;
+    $('t-start').textContent='Start';tShow();
   });
 })();
 </script>
